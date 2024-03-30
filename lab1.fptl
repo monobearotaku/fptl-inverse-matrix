@@ -1,0 +1,304 @@
+Scheme Run {
+    N = [1];
+    
+    A = (N).GenerateMatrix;
+    I = (N).GenerateIdentityMatrix;
+
+    @ = (A * I * N).InverseMatrix;
+
+    Fun InverseMatrix {
+        A = [1];
+        I = [2];
+        N = [3];
+
+
+        // @ = (A.print * (I * A * 0 * N).DoAllRows.print);
+        @ = (I * A * 0 * N).DoAllRows;
+
+        Fun DoAllRows {
+            I = [1];
+            A = [2];
+            index = [3];
+            N = [4]; 
+    
+            pivot = (A * index).GetPivot;
+
+            changedI = (
+                            I * 
+                            index * (
+                                (I * index).arrayGet * 
+                                0 * 
+                                N * 
+                                pivot
+                            ).DoPivotRow
+                        ).arraySet;
+
+            changedA = (
+                        A * 
+                        index * (
+                            (A * index).arrayGet *
+                            0 * 
+                            N * 
+                            pivot
+                        ).DoPivotRow
+                    ).arraySet;
+
+            reversedI = (
+                    A *
+                    changedI *
+                    0 * 
+                    N *
+                    index
+                ).DoSumMatrix;
+
+            reversedA = (
+                    A *
+                    changedA *
+                    0 * 
+                    N *
+                    index
+                ).DoSumMatrix;
+
+            @ = (index * N).less -> (
+                reversedI * 
+                reversedA *
+                (index * 1).add *
+                N
+            ).DoAllRows,
+            I;
+        }
+
+        Fun GetPivot {
+            A = [1];
+            index = [2];
+
+            @ = (
+                    (
+                        (
+                            A * 
+                            index
+                        ).arrayGet
+                    ) * 
+                    index
+                ).arrayGet;
+        }
+
+        Fun DoPivotRow {
+            Row = [1];
+            index = [2];
+            N = [3];
+            pivot = [4];
+
+            @ = (index * N).less -> (
+                (
+                    Row * 
+                    index * 
+                    pivot
+                ).PivotRow *
+                (index * 1).add *
+                N *
+                pivot
+            ).DoPivotRow,
+            Row;
+
+            Fun PivotRow {
+                x = [1];
+                u = [2];
+                i = [3];
+
+                @ = (i * 0.0).greater -> (
+                    x * 
+                    u * 
+                    (
+                        (x * u).arrayGet * 
+                        i
+                    ).div
+                ).arraySet, 
+                x;
+            }
+        }
+
+        Fun DoSumMatrix {
+            A = [1];
+            X = [2];
+            index = [3];
+            N = [4];
+            i = [5];
+
+            factor = ((A * index).arrayGet * i).arrayGet;
+
+            @ = (index * N).less -> ((
+                index * 
+                i
+            ).nequal -> ( 
+                    A *
+                    (
+                        X *
+                        index *
+                        (
+                            (X * index).arrayGet *
+                            (X * i).arrayGet *
+                            0 *
+                            factor *
+                            N
+                        ).DoSumRow
+                    ).arraySet *
+                    (index * 1).add *
+                    N *
+                    i
+                ).DoSumMatrix, (
+                    A *
+                    X *
+                    (index * 1).add *
+                    N *
+                    i
+                ).DoSumMatrix
+            ), 
+            X;
+
+            Fun DoSumRow {
+                row = [1];
+                secondRow = [2];
+                index = [3];
+                factor = [4];
+                N = [5];
+
+                @ = (index * N).less -> (
+                    (
+                        row *
+                        secondRow *
+                        index *
+                        factor
+                    ).SumRow *
+                    secondRow *
+                    (index * 1).add *
+                    factor *
+                    N
+                ).DoSumRow, 
+                row;
+
+                Fun SumRow {
+                    row = [1];
+                    rowSecond = [2];
+                    col = [3];
+                    factor = [4];
+
+                    @ = (
+                        row * 
+                        col * (
+                            (row * col).arrayGet * 
+                            (
+                                (rowSecond * col).arrayGet * 
+                                factor
+                            ).mul
+                        ).sub
+                    ).arraySet;
+                }
+            }
+        }
+    }
+
+
+    Fun GenerateMatrix {
+        N = [1];
+
+        @ = (
+                (
+                    (
+                        N * 
+                        (N * 0.0).arrayCreate
+                    ).arrayCreate *
+                    N * 
+                    N
+                ).MatrGen
+            );
+        
+        Fun MatrGen {
+            Matr = [1];
+            N = [2];
+            index = ([3] * 1).sub;
+
+            @ = (index * 0).gequal ->
+                    (
+                        (
+                            Matr * 
+                            index * (
+                                (N * 0.0).arrayCreate * 
+                                N
+                            ).ArrGen
+                        ).arraySet *
+                        N *
+                        index
+                    ).MatrGen,    
+                    Matr;
+
+            Fun ArrGen 
+            {
+                k = 10.0;			
+                Arr = [1];
+                index = ([2] * 1).sub;
+                
+                @ = (index * 0).gequal -> 
+                        (	
+                            (
+                                Arr * 
+                                index * (
+                                    (rand * k).mul
+                                ).round
+                            ).arraySet * 
+                            index
+                        ).ArrGen,
+                        Arr;
+            }
+        }
+    }
+
+    Fun GenerateIdentityMatrix {
+        N = [1];
+
+        @ = (
+            (
+                (
+                    N * 
+                    (N * 0.0).arrayCreate
+                ).arrayCreate *
+                N * 
+                N
+            ).MatrGen
+        );
+        
+        Fun MatrGen
+        {
+            Matr = [1];
+            N = [2];
+            index = ([3] * 1).sub;
+
+            @ = (index * 0).gequal ->
+                    (
+                        (
+                            Matr *
+                            index * (
+                                (N * 0.0).arrayCreate * 
+                                index *
+                                1.0
+                            ).arraySet
+                        ).arraySet *
+                        N *
+                        index
+                    ).MatrGen,    
+                    Matr;
+        }
+    }
+}
+
+Application
+% Run(100)  
+
+// Так как запускаю через Wine, то померим сколько он есть сам (260ms примерно)
+// Scheme nothing {
+//     @ = Pi;
+// }
+
+// Application
+// % nothing  
+
